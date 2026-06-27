@@ -16,30 +16,30 @@
 
 <br />
 
-## ✨ Features Showcase
+## Features Showcase
 
-🚀 **Interactive Drag-and-Drop**
+**Interactive Drag-and-Drop**
 > Seamlessly reorder your tasks on the fly using `@dnd-kit`.
 
-📊 **Productivity Analytics**
+**Productivity Analytics**
 > Slide-out dashboard visualizing your focus time, completion rates, and priority distribution using dynamic charts.
 
-🍅 **Zen Mode & Pomodoro**
+**Zen Mode & Pomodoro**
 > Dive into deep work with a full-screen, distraction-free Pomodoro timer dedicated to individual tasks.
 
-🏷️ **Eisenhower Matrix Priority**
+**Eisenhower Matrix Priority**
 > Categorize tasks logically by sorting them based on Importance and Urgency.
 
-📜 **Task History Logging**
+**Task History Logging**
 > Never lose a task by accident! Deleted tasks and bulk "Delete All" wipes are securely archived with timestamps.
 
-## 🏗️ Architecture & Storage
+## Architecture & Storage
 
 - **Multi-page Approach:** Engineered utilizing URL query parameters (`?id=`) to navigate fluidly between the main dashboard and specific task detail views.
 - **RESTful API Backend:** Node.js/Express backend provides full CRUD capability endpoints.
 - **File-based Persistence:** Utilizes a lightweight, database-free JSON architecture (`todos.json` and `history.json`) for seamless local testing and data retention.
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 ziptrrip/
@@ -51,7 +51,7 @@ ziptrrip/
 └── .gitignore            # Git tracking exclusions
 ```
 
-## 🚀 Quick Start Guide
+## Quick Start Guide
 
 ### 1. Initialize the Backend
 ```bash
@@ -70,7 +70,7 @@ npm run dev
 ```
 *Open the provided localhost URL (e.g., `http://localhost:5173`) in your browser to view the app!*
 
-## 🔌 API Reference Endpoints
+## API Reference Endpoints
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
@@ -87,5 +87,5 @@ npm run dev
 <br />
 
 <div align="center">
-  <i>Built with ❤️ for the Ziptrrip Tech Challenge.</i>
+  <i>Built for the Ziptrrip Tech Challenge.</i>
 </div>
