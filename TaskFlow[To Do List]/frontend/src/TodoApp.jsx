@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Save, X, Edit3, Trash2, Clock, Play, Pause, RotateCcw, Maximize2, Minimize2, BarChart2 } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000/api/todos';
+const API_URL = '/api/todos';
 
 function TodoApp() {
   const [todo, setTodo] = useState(null);

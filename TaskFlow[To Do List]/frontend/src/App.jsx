@@ -19,7 +19,7 @@ import {
 import { SortableTodoItem } from './SortableTodoItem';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from 'recharts';
 
-const API_URL = 'http://localhost:5000/api/todos';
+const API_URL = '/api/todos';
 const CATEGORIES = ['Personal', 'Work', 'Urgent', 'Other'];
 
 function App() {

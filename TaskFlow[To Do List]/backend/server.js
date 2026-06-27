@@ -38,6 +38,9 @@ const saveHistory = (history) => {
   fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2));
 };
 
+// Helper to get userId from headers
+const getUserId = (req) => req.headers['x-user-id'] || 'anonymous';
+
 // CREATE
 app.post('/api/todos', (req, res) => {
   const { title, description, category } = req.body;
@@ -45,8 +48,10 @@ app.post('/api/todos', (req, res) => {
     return res.status(400).json({ error: 'Title is required' });
   }
 
+  const userId = getUserId(req);
   const newTodo = {
     id: uuidv4(),
+    userId,
     title,
     description: description || '',
     category: category || 'Other',
@@ -63,15 +68,17 @@ app.post('/api/todos', (req, res) => {
 
 // READ ALL
 app.get('/api/todos', (req, res) => {
-  const todos = getTodos();
+  const userId = getUserId(req);
+  const todos = getTodos().filter(t => t.userId === userId || (!t.userId && userId === 'anonymous'));
   res.json(todos);
 });
 
 // READ ONE
 app.get('/api/todos/:id', (req, res) => {
   const { id } = req.params;
+  const userId = getUserId(req);
   const todos = getTodos();
-  const todo = todos.find(t => t.id === id);
+  const todo = todos.find(t => t.id === id && (t.userId === userId || (!t.userId && userId === 'anonymous')));
 
   if (!todo) {
     return res.status(404).json({ error: 'Todo not found' });
@@ -83,10 +90,11 @@ app.get('/api/todos/:id', (req, res) => {
 // UPDATE
 app.put('/api/todos/:id', (req, res) => {
   const { id } = req.params;
+  const userId = getUserId(req);
   const { title, description, completed, category, subtasks, dueDate, urgency, importance, focusTime } = req.body;
   
   const todos = getTodos();
-  const todoIndex = todos.findIndex(t => t.id === id);
+  const todoIndex = todos.findIndex(t => t.id === id && (t.userId === userId || (!t.userId && userId === 'anonymous')));
 
   if (todoIndex === -1) {
     return res.status(404).json({ error: 'Todo not found' });
@@ -114,36 +122,49 @@ app.put('/api/todos/:id', (req, res) => {
 // REORDER
 app.put('/api/todos/reorder', (req, res) => {
   const { orderedIds } = req.body;
+  const userId = getUserId(req);
   if (!orderedIds || !Array.isArray(orderedIds)) {
     return res.status(400).json({ error: 'orderedIds array is required' });
   }
 
   const todos = getTodos();
-  const newTodos = [];
+  const userTodos = [];
+  const otherTodos = [];
   
+  todos.forEach(todo => {
+    if (todo.userId === userId || (!todo.userId && userId === 'anonymous')) {
+      userTodos.push(todo);
+    } else {
+      otherTodos.push(todo);
+    }
+  });
+
+  const newTodos = [];
   // Rebuild the array according to orderedIds
   orderedIds.forEach(id => {
-    const todo = todos.find(t => t.id === id);
+    const todo = userTodos.find(t => t.id === id);
     if (todo) newTodos.push(todo);
   });
   
-  // Add any todos that weren't in orderedIds at the end
-  todos.forEach(todo => {
+  // Add any user's todos that weren't in orderedIds at the end
+  userTodos.forEach(todo => {
     if (!orderedIds.includes(todo.id)) {
       newTodos.push(todo);
     }
   });
 
-  saveTodos(newTodos);
+  // Combine with other users' todos
+  saveTodos([...newTodos, ...otherTodos]);
   res.json(newTodos);
 });
 
 // DELETE
 app.delete('/api/todos/:id', (req, res) => {
   const { id } = req.params;
+  const userId = getUserId(req);
   
   let todos = getTodos();
-  const todoToDelete = todos.find(t => t.id === id);
+  const todoToDelete = todos.find(t => t.id === id && (t.userId === userId || (!t.userId && userId === 'anonymous')));
 
   if (!todoToDelete) {
     return res.status(404).json({ error: 'Todo not found' });
@@ -162,20 +183,25 @@ app.delete('/api/todos/:id', (req, res) => {
 
 // DELETE ALL
 app.delete('/api/todos', (req, res) => {
+  const userId = getUserId(req);
   const todos = getTodos();
   const history = getHistory();
 
-  // Add all current todos to history
-  const newHistoryEntries = todos.map(t => ({ ...t, deletedAt: new Date().toISOString() }));
+  const userTodos = todos.filter(t => t.userId === userId || (!t.userId && userId === 'anonymous'));
+  const otherTodos = todos.filter(t => t.userId !== userId && !(!t.userId && userId === 'anonymous'));
+
+  // Add all current user todos to history
+  const newHistoryEntries = userTodos.map(t => ({ ...t, deletedAt: new Date().toISOString() }));
   saveHistory([...history, ...newHistoryEntries]);
 
-  saveTodos([]);
-  res.json({ message: 'All todos deleted successfully' });
+  saveTodos(otherTodos);
+  res.json({ message: 'All user todos deleted successfully' });
 });
 
 // GET HISTORY
 app.get('/api/history', (req, res) => {
-  const history = getHistory();
+  const userId = getUserId(req);
+  const history = getHistory().filter(t => t.userId === userId || (!t.userId && userId === 'anonymous'));
   res.json(history);
 });
 

@@ -16,5 +16,15 @@
     "completed": true,
     "createdAt": "2026-06-27T17:50:14.778Z",
     "deletedAt": "2026-06-27T17:50:30.095Z"
+  },
+  {
+    "id": "43ac97f8-3e4f-4c64-b64b-6dc5313e88e8",
+    "userId": "user_vjdln13j1",
+    "title": "meeting 5:30 pm",
+    "description": "",
+    "category": "Personal",
+    "completed": false,
+    "createdAt": "2026-06-27T19:01:11.180Z",
+    "deletedAt": "2026-06-27T19:01:32.900Z"
   }
 ]
