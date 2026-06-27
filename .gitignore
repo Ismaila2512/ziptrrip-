@@ -1,0 +1,6 @@
+node_modules/
+.DS_Store
+dist/
+build/
+backend/todos.json
+backend/history.json
