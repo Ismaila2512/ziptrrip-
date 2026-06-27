@@ -33,20 +33,20 @@ This is a comprehensive, multi-page Todo application built with React, Vite, and
 
 ## Project Structure
 
-- `frontend/`: Contains the React application code, styles (`index.css`), and components.
-- `backend/`: Contains the Express server (`server.js`), API routes, and JSON data files.
+- `TaskFlow[To Do List]/frontend/`: Contains the React application code, styles (`index.css`), and components.
+- `TaskFlow[To Do List]/backend/`: Contains the Express server (`server.js`), API routes, and JSON data files.
 - `challenge.md`: Contains the solutions to the JavaScript coding problems requested in the technical challenge.
 
 ## Setup Instructions
 
 ### Backend Setup
-1. Navigate to the `backend/` directory: `cd backend`
+1. Navigate to the backend directory: `cd "TaskFlow[To Do List]/backend"`
 2. Install dependencies: `npm install`
 3. Start the server: `node server.js`
    *(The backend API will run on http://localhost:5000)*
 
 ### Frontend Setup
-1. Navigate to the `frontend/` directory: `cd frontend`
+1. Navigate to the frontend directory: `cd "TaskFlow[To Do List]/frontend"`
 2. Install dependencies: `npm install`
 3. Start the development server: `npm run dev`
 4. Open the application in your browser (usually `http://localhost:5173`).
