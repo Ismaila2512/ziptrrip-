@@ -7,13 +7,17 @@ const { v4: uuidv4 } = require('uuid');
 const app = express();
 const PORT = process.env.PORT || 5000;
 const DATA_FILE = path.join(__dirname, 'todos.json');
+const HISTORY_FILE = path.join(__dirname, 'history.json');
 
 app.use(cors());
 app.use(express.json());
 
-// Initialize data file if it doesn't exist
+// Initialize data files if they don't exist
 if (!fs.existsSync(DATA_FILE)) {
   fs.writeFileSync(DATA_FILE, JSON.stringify([]));
+}
+if (!fs.existsSync(HISTORY_FILE)) {
+  fs.writeFileSync(HISTORY_FILE, JSON.stringify([]));
 }
 
 const getTodos = () => {
@@ -25,9 +29,18 @@ const saveTodos = (todos) => {
   fs.writeFileSync(DATA_FILE, JSON.stringify(todos, null, 2));
 };
 
+const getHistory = () => {
+  const data = fs.readFileSync(HISTORY_FILE);
+  return JSON.parse(data);
+};
+
+const saveHistory = (history) => {
+  fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2));
+};
+
 // CREATE
 app.post('/api/todos', (req, res) => {
-  const { title, description } = req.body;
+  const { title, description, category } = req.body;
   if (!title) {
     return res.status(400).json({ error: 'Title is required' });
   }
@@ -36,6 +49,7 @@ app.post('/api/todos', (req, res) => {
     id: uuidv4(),
     title,
     description: description || '',
+    category: category || 'Other',
     completed: false,
     createdAt: new Date().toISOString()
   };
@@ -69,7 +83,7 @@ app.get('/api/todos/:id', (req, res) => {
 // UPDATE
 app.put('/api/todos/:id', (req, res) => {
   const { id } = req.params;
-  const { title, description, completed } = req.body;
+  const { title, description, completed, category, subtasks, dueDate, urgency, importance, focusTime } = req.body;
   
   const todos = getTodos();
   const todoIndex = todos.findIndex(t => t.id === id);
@@ -82,7 +96,13 @@ app.put('/api/todos/:id', (req, res) => {
     ...todos[todoIndex],
     ...(title !== undefined && { title }),
     ...(description !== undefined && { description }),
-    ...(completed !== undefined && { completed })
+    ...(completed !== undefined && { completed }),
+    ...(category !== undefined && { category }),
+    ...(subtasks !== undefined && { subtasks }),
+    ...(dueDate !== undefined && { dueDate }),
+    ...(urgency !== undefined && { urgency }),
+    ...(importance !== undefined && { importance }),
+    ...(focusTime !== undefined && { focusTime })
   };
 
   todos[todoIndex] = updatedTodo;
@@ -91,22 +111,74 @@ app.put('/api/todos/:id', (req, res) => {
   res.json(updatedTodo);
 });
 
+// REORDER
+app.put('/api/todos/reorder', (req, res) => {
+  const { orderedIds } = req.body;
+  if (!orderedIds || !Array.isArray(orderedIds)) {
+    return res.status(400).json({ error: 'orderedIds array is required' });
+  }
+
+  const todos = getTodos();
+  const newTodos = [];
+  
+  // Rebuild the array according to orderedIds
+  orderedIds.forEach(id => {
+    const todo = todos.find(t => t.id === id);
+    if (todo) newTodos.push(todo);
+  });
+  
+  // Add any todos that weren't in orderedIds at the end
+  todos.forEach(todo => {
+    if (!orderedIds.includes(todo.id)) {
+      newTodos.push(todo);
+    }
+  });
+
+  saveTodos(newTodos);
+  res.json(newTodos);
+});
+
 // DELETE
 app.delete('/api/todos/:id', (req, res) => {
   const { id } = req.params;
   
   let todos = getTodos();
-  const initialLength = todos.length;
-  todos = todos.filter(t => t.id !== id);
+  const todoToDelete = todos.find(t => t.id === id);
 
-  if (todos.length === initialLength) {
+  if (!todoToDelete) {
     return res.status(404).json({ error: 'Todo not found' });
   }
 
+  todos = todos.filter(t => t.id !== id);
   saveTodos(todos);
+
+  // Save to history
+  const history = getHistory();
+  history.push({ ...todoToDelete, deletedAt: new Date().toISOString() });
+  saveHistory(history);
+
   res.json({ message: 'Todo deleted successfully' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+// DELETE ALL
+app.delete('/api/todos', (req, res) => {
+  const todos = getTodos();
+  const history = getHistory();
+
+  // Add all current todos to history
+  const newHistoryEntries = todos.map(t => ({ ...t, deletedAt: new Date().toISOString() }));
+  saveHistory([...history, ...newHistoryEntries]);
+
+  saveTodos([]);
+  res.json({ message: 'All todos deleted successfully' });
+});
+
+// GET HISTORY
+app.get('/api/history', (req, res) => {
+  const history = getHistory();
+  res.json(history);
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server is running on http://0.0.0.0:${PORT}`);
 });

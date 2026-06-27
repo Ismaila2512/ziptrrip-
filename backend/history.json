@@ -1,0 +1,20 @@
+[
+  {
+    "id": "f37c3a6c-3bb9-4f40-b2f9-211b6ba0b015",
+    "title": "meeting 5:30 PM",
+    "description": "",
+    "category": "Personal",
+    "completed": true,
+    "createdAt": "2026-06-27T17:50:05.760Z",
+    "deletedAt": "2026-06-27T17:50:30.095Z"
+  },
+  {
+    "id": "85de0fbb-3c56-4d54-8043-ea48f2a57779",
+    "title": "Meeting 6:00 PM",
+    "description": "",
+    "category": "Work",
+    "completed": true,
+    "createdAt": "2026-06-27T17:50:14.778Z",
+    "deletedAt": "2026-06-27T17:50:30.095Z"
+  }
+]
