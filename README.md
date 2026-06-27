@@ -1,64 +1,91 @@
-# Ziptrrip Todo Application
+<div align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=00c6ff&height=200&section=header&text=TaskFlow%20|%20To-Do%20List&fontSize=50&fontColor=ffffff" width="100%" alt="TaskFlow Banner" />
+  
+  <p align="center">
+    <b>A modern, glassmorphic productivity application built to help you get things done.</b>
+  </p>
 
-This is a comprehensive, multi-page Todo application built with React, Vite, and an Express.js Node backend. It incorporates modern productivity features including analytics, Pomodoro timers, category filtering, and task history.
+  <p align="center">
+    <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+    <img src="https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E" alt="Vite" />
+    <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node" />
+    <img src="https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express" />
+    <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" alt="CSS" />
+  </p>
+</div>
 
-## Architecture
+<br />
 
-- **Frontend:** React with Vite. Designed as a multi-page application utilizing URL query parameters (`?id=`) to navigate between the main dashboard and specific task detail views.
-- **Backend:** Node.js with Express. Provides a robust set of RESTful API endpoints.
-- **Data Persistence:** JSON file-based storage (`todos.json` and `history.json`), simulating a database while keeping the project lightweight and easily testable.
+## ✨ Features Showcase
 
-## Core Features & Functionalities
+🚀 **Interactive Drag-and-Drop**
+> Seamlessly reorder your tasks on the fly using `@dnd-kit`.
 
-### 1. Dashboard & Task Management
-- **CRUD Operations**: Create, Read, Update, and Delete individual todo tasks.
-- **Drag-and-Drop Reordering**: Users can reorder tasks interactively using `@dnd-kit`.
-- **Category Filtering**: Tasks can be filtered dynamically (e.g., All, Work, Personal, Shopping, Health).
-- **Bulk Operations**: Features a "Delete All" function with user confirmation that securely moves all active tasks into the History log.
-- **Sub-tasks**: Within a specific todo's detail page, users can create and manage nested sub-tasks.
+📊 **Productivity Analytics**
+> Slide-out dashboard visualizing your focus time, completion rates, and priority distribution using dynamic charts.
 
-### 2. Analytics & Task History
-- **Task Analytics**: A slide-out panel that visually displays productivity metrics using charts (`recharts`). Shows completion rates, priority distribution, and total focus time.
-- **Task History Tracking**: Whenever a task is deleted (singularly or via "Delete All"), it isn't permanently lost. It is archived with a `deletedAt` timestamp and can be viewed inside the Analytics panel.
+🍅 **Zen Mode & Pomodoro**
+> Dive into deep work with a full-screen, distraction-free Pomodoro timer dedicated to individual tasks.
 
-### 3. Productivity Tools
-- **Pomodoro Timer & Zen Mode**: Individual task detail pages feature a Pomodoro focus timer. Activating "Zen Mode" provides a distraction-free, full-screen overlay for deep work.
-- **Eisenhower Matrix Priority Tags**: Tasks can be tagged by Importance and Urgency, allowing for better prioritization and visual sorting.
-- **In-App Notifications**: Toast notifications alert users of success states, errors, and task reminders.
+🏷️ **Eisenhower Matrix Priority**
+> Categorize tasks logically by sorting them based on Importance and Urgency.
 
-### 4. UI/UX Design & Responsiveness
-- **Glassmorphism Aesthetic**: Modern UI utilizing CSS backdrops, blurs, and gradient mesh overlays for a premium feel.
-- **Fully Responsive Layout**: Comprehensive CSS media queries ensure the app gracefully adapts from large desktop displays down to tablet and mobile dimensions (including stacking layouts for small screens).
-- **Smooth Transitions**: Elements utilize dynamic motion transitions, such as the Analytics panel gracefully sliding out while shifting the main task box.
+📜 **Task History Logging**
+> Never lose a task by accident! Deleted tasks and bulk "Delete All" wipes are securely archived with timestamps.
 
-## Project Structure
+## 🏗️ Architecture & Storage
 
-- `TaskFlow[To Do List]/frontend/`: Contains the React application code, styles (`index.css`), and components.
-- `TaskFlow[To Do List]/backend/`: Contains the Express server (`server.js`), API routes, and JSON data files.
-- `challenge.md`: Contains the solutions to the JavaScript coding problems requested in the technical challenge.
+- **Multi-page Approach:** Engineered utilizing URL query parameters (`?id=`) to navigate fluidly between the main dashboard and specific task detail views.
+- **RESTful API Backend:** Node.js/Express backend provides full CRUD capability endpoints.
+- **File-based Persistence:** Utilizes a lightweight, database-free JSON architecture (`todos.json` and `history.json`) for seamless local testing and data retention.
 
-## Setup Instructions
+## 📂 Project Structure
 
-### Backend Setup
-1. Navigate to the backend directory: `cd "TaskFlow[To Do List]/backend"`
-2. Install dependencies: `npm install`
-3. Start the server: `node server.js`
-   *(The backend API will run on http://localhost:5000)*
+```text
+ziptrrip/
+├── TaskFlow[To Do List]/
+│   ├── frontend/         # React, Vite, and Glassmorphic CSS UI
+│   └── backend/          # Node.js, Express, and JSON storage
+├── challenge.md          # JavaScript challenge problem solutions
+├── README.md             # Project documentation
+└── .gitignore            # Git tracking exclusions
+```
 
-### Frontend Setup
-1. Navigate to the frontend directory: `cd "TaskFlow[To Do List]/frontend"`
-2. Install dependencies: `npm install`
-3. Start the development server: `npm run dev`
-4. Open the application in your browser (usually `http://localhost:5173`).
+## 🚀 Quick Start Guide
 
-## API Endpoints
+### 1. Initialize the Backend
+```bash
+cd "TaskFlow[To Do List]/backend"
+npm install
+node server.js
+```
+*The API will start running on `http://localhost:5000`.*
 
-- **GET `/api/todos`**: Fetch the list of all active todos.
-- **POST `/api/todos`**: Create a new todo item.
-- **PUT `/api/todos/reorder`**: Save the new order of todos after a drag-and-drop event.
-- **GET `/api/todos/:id`**: Fetch a specific todo by its ID.
-- **PUT `/api/todos/:id`**: Update a specific todo (title, description, status, subtasks, priority, etc.).
-- **DELETE `/api/todos/:id`**: Delete a specific todo and move it to history.
-- **DELETE `/api/todos`**: Bulk delete all active todos and move them to history.
-- **POST `/api/todos/:id/focus`**: Add focused time duration to a specific task.
-- **GET `/api/history`**: Retrieve the log of deleted/archived tasks.
+### 2. Initialize the Frontend
+*In a new terminal window:*
+```bash
+cd "TaskFlow[To Do List]/frontend"
+npm install
+npm run dev
+```
+*Open the provided localhost URL (e.g., `http://localhost:5173`) in your browser to view the app!*
+
+## 🔌 API Reference Endpoints
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/todos` | Fetch all active todos |
+| `POST` | `/api/todos` | Create a new todo |
+| `PUT` | `/api/todos/reorder`| Save drag-and-drop order states |
+| `GET` | `/api/todos/:id` | Fetch specific todo details |
+| `PUT` | `/api/todos/:id` | Update specific todo attributes |
+| `DELETE` | `/api/todos/:id` | Archive a specific todo |
+| `DELETE` | `/api/todos` | Bulk archive all active todos |
+| `POST` | `/api/todos/:id/focus`| Add Pomodoro focus time to a task |
+| `GET` | `/api/history` | Retrieve deleted/archived tasks log |
+
+<br />
+
+<div align="center">
+  <i>Built with ❤️ for the Ziptrrip Tech Challenge.</i>
+</div>
