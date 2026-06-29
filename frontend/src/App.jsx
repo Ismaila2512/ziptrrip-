@@ -25,6 +25,8 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom';
 const API_URL = '/api/todos';
 const CATEGORIES = ['Personal', 'Work', 'Urgent', 'Other'];
 
+import * as chrono from 'chrono-node';
+
 // -----------------------------------------------------------------
 // COMPONENTS
 // -----------------------------------------------------------------
@@ -198,13 +200,13 @@ const AddTaskModal = ({ isOpen, onClose, onSubmit, newTodoTitle, setNewTodoTitle
             <input 
               type="text" 
               className="form-input" 
-              placeholder="e.g. Finish UI design !urgent" 
+              placeholder="e.g. Finish UI design tomorrow at 5pm" 
               value={newTodoTitle}
               onChange={(e) => setNewTodoTitle(e.target.value)}
               autoFocus
             />
             <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '5px' }}>
-              Tips: use <code>!urgent</code>, <code>!important</code>, <code>today</code>, <code>tomorrow</code>, or a day name
+              Tips: use natural dates like <code>tomorrow at 5pm</code>, or priority flags like <code>!urgent</code>, <code>!important</code>
             </div>
           </div>
           <div className="input-group">
@@ -220,7 +222,7 @@ const AddTaskModal = ({ isOpen, onClose, onSubmit, newTodoTitle, setNewTodoTitle
             </select>
           </div>
           <div className="input-group">
-            <label className="input-label">Due Date <span style={{ color: 'var(--text-tertiary)', fontWeight: 400 }}>(optional)</span></label>
+            <label className="input-label">Due Date <span style={{ color: 'var(--text-tertiary)', fontWeight: 400 }}>(optional overrides natural text)</span></label>
             <input 
               type="date" 
               className="form-input" 
@@ -254,11 +256,18 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
-  const [showOverviewPanel, setShowOverviewPanel] = useState(true);
+  const [showOverviewPanel, setShowOverviewPanel] = useState(() => {
+    const saved = localStorage.getItem('showOverviewPanel');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
   // Sidebar toggle — open by default on desktop, closed on mobile
   const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > 768);
   
   const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
+
+  useEffect(() => {
+    localStorage.setItem('showOverviewPanel', JSON.stringify(showOverviewPanel));
+  }, [showOverviewPanel]);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -341,43 +350,13 @@ function App() {
       }
     }
 
-    const todayRegex = /\b(today)\b/i;
-    const tomorrowRegex = /\b(tomorrow)\b/i;
-    const daysRegex = /\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i;
-    const nextDaysRegex = /\bnext\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i;
-
-    const getNextDayOfWeek = (dayName, isNextWeek) => {
-      const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-      const targetDay = days.indexOf(dayName.toLowerCase());
-      const date = new Date();
-      const currentDay = date.getDay();
-      let daysToAdd = targetDay - currentDay;
-      if (daysToAdd <= 0) daysToAdd += 7;
-      if (isNextWeek) daysToAdd += 7;
-      date.setDate(date.getDate() + daysToAdd);
-      return date.toISOString().split('T')[0];
-    };
-
-    if (todayRegex.test(title)) {
-      dueDate = new Date().toISOString().split('T')[0];
-      title = title.replace(todayRegex, '');
-    } else if (tomorrowRegex.test(title)) {
-      const d = new Date();
-      d.setDate(d.getDate() + 1);
-      dueDate = d.toISOString().split('T')[0];
-      title = title.replace(tomorrowRegex, '');
-    } else {
-      const nextDayMatch = title.match(nextDaysRegex);
-      if (nextDayMatch) {
-        dueDate = getNextDayOfWeek(nextDayMatch[1], true);
-        title = title.replace(nextDaysRegex, '');
-      } else {
-        const dayMatch = title.match(daysRegex);
-        if (dayMatch) {
-          dueDate = getNextDayOfWeek(dayMatch[1], false);
-          title = title.replace(daysRegex, '');
-        }
-      }
+    const parsedResults = chrono.parse(title);
+    if (parsedResults && parsedResults.length > 0) {
+      const result = parsedResults[0];
+      const parsedDate = result.start.date();
+      // Use local timezone instead of UTC so "tomorrow" means tomorrow in local time
+      dueDate = new Date(parsedDate.getTime() - (parsedDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+      title = title.replace(result.text, '');
     }
 
     title = title.replace(/\s+/g, ' ').trim();
