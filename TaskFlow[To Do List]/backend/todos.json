@@ -6,5 +6,35 @@
     "category": "Personal",
     "completed": false,
     "createdAt": "2026-06-27T18:51:31.452Z"
+  },
+  {
+    "id": "3b9e1870-04d7-4adc-8f3b-b4b2f73c6918",
+    "userId": "user_lcw27wazk",
+    "title": "Exam",
+    "description": "",
+    "category": "Personal",
+    "completed": true,
+    "createdAt": "2026-06-27T19:04:41.901Z",
+    "dueDate": "",
+    "urgency": "low",
+    "importance": "low"
+  },
+  {
+    "id": "bef26f35-1b88-4bc0-b7fb-9f84b65895b1",
+    "userId": "user_in76d52zb",
+    "title": "Meeting at 5:00 pm",
+    "description": "",
+    "category": "Personal",
+    "completed": false,
+    "createdAt": "2026-06-29T11:27:39.801Z"
+  },
+  {
+    "id": "767c1690-fe9e-49ab-ac7a-fa0238b1f7f9",
+    "userId": "user_in76d52zb",
+    "title": "Meeting 5:30 pm",
+    "description": "",
+    "category": "Personal",
+    "completed": true,
+    "createdAt": "2026-06-29T11:29:20.205Z"
   }
 ]

@@ -187,101 +187,98 @@ function TodoApp() {
       {zenMode && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: '#030305', zIndex: 9999, display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', color: '#fff'
+          background: 'var(--text-primary)', zIndex: 9999, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', color: 'var(--card-bg)'
         }}>
           <button 
             onClick={() => setZenMode(false)}
-            style={{ position: 'absolute', top: '30px', right: '30px', background: 'none', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', padding: '10px 20px', borderRadius: '30px', cursor: 'pointer', display: 'flex', gap: '8px', alignItems: 'center' }}
+            style={{ position: 'absolute', top: '32px', right: '40px', background: 'transparent', border: 'none', color: 'var(--text-secondary)', padding: '8px', cursor: 'pointer', display: 'flex', gap: '8px', alignItems: 'center', fontSize: '0.875rem' }}
           >
-            <Minimize2 size={18} /> Exit Zen Mode
+            <Minimize2 size={20} /> <span style={{display: 'none'}}>Exit</span>
           </button>
           
-          <h2 style={{ fontSize: '1.5rem', color: '#a1a1aa', fontWeight: '400', marginBottom: '20px' }}>Deep Focus</h2>
-          <h1 style={{ fontSize: '3rem', fontWeight: '600', marginBottom: '40px', maxWidth: '80%', textAlign: 'center' }}>{todo.title}</h1>
+          <h2 style={{ fontSize: '1rem', color: 'var(--text-tertiary)', fontWeight: '500', marginBottom: '16px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Focus Session</h2>
+          <h1 style={{ fontSize: '2rem', fontWeight: '500', marginBottom: '60px', maxWidth: '80%', textAlign: 'center', color: 'var(--card-bg)' }}>{todo.title}</h1>
           
-          <div style={{ fontSize: '8rem', fontWeight: '700', letterSpacing: '0.02em', fontVariantNumeric: 'tabular-nums', textShadow: '0 0 40px rgba(139, 92, 246, 0.4)', marginBottom: '40px' }}>
+          <div style={{ fontSize: '8rem', fontWeight: '400', letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums', marginBottom: '60px', color: 'var(--card-bg)' }}>
             {formatTime(timeLeft)}
           </div>
           
           <div style={{ display: 'flex', gap: '16px' }}>
             <button 
               onClick={() => setTimerActive(!timerActive)} 
-              className="glow-button" 
-              style={{ padding: '16px 40px', borderRadius: '30px', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
+              style={{ padding: '12px 32px', borderRadius: '32px', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', border: 'none', background: timerActive ? 'var(--card-bg)' : 'var(--text-primary)', color: timerActive ? 'var(--text-primary)' : 'var(--card-bg)', boxShadow: timerActive ? 'none' : 'inset 0 0 0 1px var(--border-light)' }}
             >
-              {timerActive ? <><Pause size={20} /> Pause</> : <><Play size={20} /> Start</>}
+              {timerActive ? <><Pause size={18} /> Pause</> : <><Play size={18} /> Start</>}
             </button>
           </div>
           
-          <div style={{ position: 'absolute', bottom: '40px', color: '#71717a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <BarChart2 size={16} /> Total Focus Time: {Math.floor(totalFocusTime / 60)}m {totalFocusTime % 60}s
+          <div style={{ position: 'absolute', bottom: '40px', color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.875rem' }}>
+            <BarChart2 size={16} /> Total Focus: {Math.floor(totalFocusTime / 60)}m {totalFocusTime % 60}s
           </div>
         </div>
       )}
 
-    <div className="container" style={{ display: zenMode ? 'none' : 'block' }}>
-      <div className="header">
-        <h1>Task Details</h1>
-        <a href="/" className="btn btn-secondary">
-          <ArrowLeft size={18} /> Back
+    <div className="container" style={{ display: zenMode ? 'none' : 'block', padding: '40px', maxWidth: '800px', margin: '0 auto' }}>
+      <div className="header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+        <h1 style={{ fontSize: '1.25rem', fontWeight: '600' }}>Task Details</h1>
+        <a href="/" className="btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <ArrowLeft size={16} /> Back
         </a>
       </div>
 
       {isEditing ? (
-        <form onSubmit={handleUpdate} className="todo-detail">
-          <div>
-            <label style={{display: 'block', marginBottom: '8px', fontWeight: '500', color: '#4b5563'}}>Task Title</label>
+        <form onSubmit={handleUpdate} className="todo-detail" style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+          <div className="input-group">
+            <label className="input-label">Task Title</label>
             <input
               type="text"
-              className="todo-input"
-              style={{width: '100%'}}
+              className="form-input"
               value={editForm.title}
               onChange={(e) => setEditForm({...editForm, title: e.target.value})}
             />
           </div>
-          <div>
-            <label style={{display: 'block', marginBottom: '8px', fontWeight: '500', color: '#4b5563'}}>Description</label>
+          <div className="input-group">
+            <label className="input-label">Description</label>
             <textarea
-              className="todo-input"
-              style={{width: '100%', minHeight: '120px', resize: 'vertical'}}
+              className="form-input"
+              style={{ minHeight: '120px', resize: 'vertical' }}
               value={editForm.description}
               onChange={(e) => setEditForm({...editForm, description: e.target.value})}
               placeholder="Add some details about this task..."
             />
           </div>
-          <div>
-            <label style={{display: 'block', marginBottom: '8px', fontWeight: '500', color: '#4b5563'}}>Due Date</label>
+          <div className="input-group">
+            <label className="input-label">Due Date</label>
             <input
               type="date"
-              className="todo-input"
-              style={{width: '100%'}}
+              className="form-input"
               value={editForm.dueDate}
               onChange={(e) => setEditForm({...editForm, dueDate: e.target.value})}
             />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
             <div>
-              <label style={{display: 'block', marginBottom: '8px', fontWeight: '500', color: '#4b5563'}}>Urgency</label>
-              <select className="todo-select" style={{width: '100%'}} value={editForm.urgency} onChange={e => setEditForm({...editForm, urgency: e.target.value})}>
+              <label className="input-label">Urgency</label>
+              <select className="form-input" value={editForm.urgency} onChange={e => setEditForm({...editForm, urgency: e.target.value})}>
                 <option value="low">Low</option>
                 <option value="high">High (Urgent)</option>
               </select>
             </div>
             <div>
-              <label style={{display: 'block', marginBottom: '8px', fontWeight: '500', color: '#4b5563'}}>Importance</label>
-              <select className="todo-select" style={{width: '100%'}} value={editForm.importance} onChange={e => setEditForm({...editForm, importance: e.target.value})}>
+              <label className="input-label">Importance</label>
+              <select className="form-input" value={editForm.importance} onChange={e => setEditForm({...editForm, importance: e.target.value})}>
                 <option value="low">Low</option>
                 <option value="high">High (Important)</option>
               </select>
             </div>
           </div>
-          <div style={{display: 'flex', gap: '12px', marginTop: '10px'}}>
-            <button type="submit" className="btn">
-              <Save size={18} /> Save Changes
+          <div style={{display: 'flex', gap: '12px', justifyContent: 'flex-end'}}>
+            <button type="button" className="btn-ghost" onClick={() => setIsEditing(false)}>
+              Cancel
             </button>
-            <button type="button" className="btn btn-secondary" onClick={() => setIsEditing(false)}>
-              <X size={18} /> Cancel
+            <button type="submit" className="btn-primary">
+              <Save size={16} /> Save Changes
             </button>
           </div>
         </form>

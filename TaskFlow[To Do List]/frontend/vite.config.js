@@ -5,8 +5,12 @@ import { resolve } from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      'react-router-dom': resolve(__dirname, 'src/react-router-dom.jsx')
+    }
+  },
   server: {
-    host: '0.0.0.0',
     port: 5173,
     allowedHosts: true,
     proxy: {

@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { CheckCircle2, Circle, Trash2, Plus, ArrowRight, Tag, BarChart2, X, Activity, Bell } from 'lucide-react';
+import { 
+  CheckCircle2, Circle, Trash2, Plus, ArrowRight, Tag, BarChart2, X, Activity, 
+  Bell, Check, Search, Moon, Sun, Menu, LayoutDashboard, Calendar, Inbox, CheckSquare, Clock
+} from 'lucide-react';
 import { useReminders } from './useReminders';
 import { ReminderModal } from './ReminderModal';
 import {
@@ -18,28 +21,262 @@ import {
 } from '@dnd-kit/sortable';
 import { SortableTodoItem } from './SortableTodoItem';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from 'recharts';
-
+import { Routes, Route, Link, useLocation } from 'react-router-dom';
 const API_URL = '/api/todos';
 const CATEGORIES = ['Personal', 'Work', 'Urgent', 'Other'];
+
+// -----------------------------------------------------------------
+// COMPONENTS
+// -----------------------------------------------------------------
+
+const Sidebar = ({ setShowAnalytics, showAnalytics, showOverviewPanel, setShowOverviewPanel, sidebarOpen, setSidebarOpen }) => {
+  const location = useLocation();
+  const path = location.pathname;
+
+  const closeMobile = () => {
+    // Only close on mobile (below 768px)
+    if (window.innerWidth <= 768) setSidebarOpen(false);
+  };
+
+  return (
+    <aside className={`sidebar ${sidebarOpen ? 'open' : 'sidebar-closed'}`}>
+      <div className="sidebar-header-row">
+        <div className="sidebar-logo">
+          <div className="sidebar-logo-icon">
+            <Check size={16} strokeWidth={3} />
+          </div>
+          <div className="sidebar-logo-text">TaskFlow</div>
+        </div>
+        <button
+          className="sidebar-collapse-btn"
+          onClick={() => setShowOverviewPanel(!showOverviewPanel)}
+          title={showOverviewPanel ? 'Hide overview panel' : 'Show overview panel'}
+        >
+          {showOverviewPanel ? <X size={14} /> : <Menu size={14} />}
+        </button>
+      </div>
+      
+      <div className="nav-section">
+        <div className="nav-section-title">Overview</div>
+        <Link to="/" className={`nav-item ${path === '/' && !showAnalytics ? 'active' : ''}`} onClick={() => { setShowAnalytics(false); closeMobile(); }}>
+          <LayoutDashboard size={16} /> Dashboard
+        </Link>
+        <Link to="/today" className={`nav-item ${path === '/today' && !showAnalytics ? 'active' : ''}`} onClick={() => { setShowAnalytics(false); closeMobile(); }}>
+          <Calendar size={16} /> Today
+        </Link>
+        <Link to="/upcoming" className={`nav-item ${path === '/upcoming' && !showAnalytics ? 'active' : ''}`} onClick={() => { setShowAnalytics(false); closeMobile(); }}>
+          <Inbox size={16} /> Upcoming
+        </Link>
+        <Link to="/completed" className={`nav-item ${path === '/completed' && !showAnalytics ? 'active' : ''}`} onClick={() => { setShowAnalytics(false); closeMobile(); }}>
+          <CheckSquare size={16} /> Completed
+        </Link>
+      </div>
+      
+      <div className="nav-section">
+        <div className="nav-section-title">Analytics</div>
+        <button className={`nav-item ${showAnalytics ? 'active' : ''}`} onClick={() => { setShowAnalytics(true); closeMobile(); }}>
+          <BarChart2 size={16} /> Analytics
+        </button>
+      </div>
+      
+    </aside>
+  );
+};
+
+const DirectedPage = ({ title, subtitle, icon, todos, onToggleComplete, onDelete, reminders, setReminderTodo, onAddClick, sensors, handleDragEnd }) => (
+  <div className="directed-page animate-fade-in" style={{ padding: '0 24px' }}>
+    <div className="greeting-section" style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '32px' }}>
+      <div style={{ padding: '18px', background: 'var(--card-bg)', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-sm)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {icon}
+      </div>
+      <div>
+        <h2 className="greeting-title" style={{ margin: 0 }}>{title}</h2>
+        <p className="greeting-subtitle" style={{ margin: '6px 0 0 0' }}>{subtitle}</p>
+      </div>
+    </div>
+    
+    <div className="task-list-section">
+      {todos.length === 0 ? (
+        <EmptyState onAddClick={onAddClick} />
+      ) : (
+        <DndContext 
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <SortableContext 
+              items={todos.map(t => t.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {todos.map(todo => (
+                <SortableTodoItem
+                  key={todo.id}
+                  todo={todo}
+                  onToggleComplete={onToggleComplete}
+                  onDelete={onDelete}
+                  reminder={reminders[todo?.id]}
+                  onOpenReminder={() => setReminderTodo(todo)}
+                />
+              ))}
+            </SortableContext>
+          </div>
+        </DndContext>
+      )}
+    </div>
+  </div>
+);
+
+const TopNavbar = ({ onAddClick, searchQuery, setSearchQuery, isDarkMode, setIsDarkMode, onMenuClick }) => (
+  <header className="top-navbar">
+    {/* Mobile hamburger — only visible on small screens via CSS */}
+    <button className="mobile-menu-btn" onClick={onMenuClick} aria-label="Toggle navigation">
+      <Menu size={18} />
+    </button>
+
+    <div className="search-bar">
+      <Search size={15} color="var(--text-tertiary)" />
+      <input 
+        type="text" 
+        className="search-input" 
+        placeholder="Search tasks..." 
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+    </div>
+    <div className="top-nav-actions">
+      <button className="icon-btn"><Bell size={17} /></button>
+      <button className="icon-btn" onClick={() => setIsDarkMode(!isDarkMode)}>
+        {isDarkMode ? <Sun size={17} /> : <Moon size={17} />}
+      </button>
+      <button className="btn-primary" onClick={onAddClick}>
+        <Plus size={17} /> Add Task
+      </button>
+    </div>
+  </header>
+);
+
+const StatCard = ({ icon, title, value, color, bgColor }) => (
+  <div className="stat-card animate-slide-in">
+    <div className="stat-icon-wrapper" style={{ backgroundColor: bgColor, color: color }}>
+      {icon}
+    </div>
+    <div className="stat-info">
+      <div className="stat-value stats-font">{value}</div>
+      <div className="stat-label">{title}</div>
+    </div>
+  </div>
+);
+
+const EmptyState = ({ onAddClick }) => (
+  <div className="empty-state animate-fade-in">
+    <div className="empty-icon-wrapper">
+      <CheckCircle2 size={24} />
+    </div>
+    <h3 className="empty-title">You're all caught up</h3>
+    <p className="empty-subtitle">Create your first task to begin your productive day.</p>
+    <button className="btn-primary" onClick={onAddClick}>
+      <Plus size={18} /> Add Task
+    </button>
+  </div>
+);
+
+const AddTaskModal = ({ isOpen, onClose, onSubmit, newTodoTitle, setNewTodoTitle, newCategory, setNewCategory, newDueDate, setNewDueDate }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">Create Task</h2>
+          <button className="modal-close-btn" onClick={onClose}>
+            <X size={24} />
+          </button>
+        </div>
+        <form onSubmit={(e) => { onSubmit(e); onClose(); }}>
+          <div className="input-group">
+            <label className="input-label">Task Name</label>
+            <input 
+              type="text" 
+              className="form-input" 
+              placeholder="e.g. Finish UI design !urgent" 
+              value={newTodoTitle}
+              onChange={(e) => setNewTodoTitle(e.target.value)}
+              autoFocus
+            />
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '5px' }}>
+              Tips: use <code>!urgent</code>, <code>!important</code>, <code>today</code>, <code>tomorrow</code>, or a day name
+            </div>
+          </div>
+          <div className="input-group">
+            <label className="input-label">Category</label>
+            <select 
+              className="form-input" 
+              value={newCategory} 
+              onChange={(e) => setNewCategory(e.target.value)}
+            >
+              {CATEGORIES.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
+          <div className="input-group">
+            <label className="input-label">Due Date <span style={{ color: 'var(--text-tertiary)', fontWeight: 400 }}>(optional)</span></label>
+            <input 
+              type="date" 
+              className="form-input" 
+              value={newDueDate}
+              onChange={(e) => setNewDueDate(e.target.value)}
+            />
+          </div>
+          <div className="modal-actions">
+            <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn-primary">Create Task</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// -----------------------------------------------------------------
+// MAIN APP COMPONENT
+// -----------------------------------------------------------------
 
 function App() {
   const [todos, setTodos] = useState([]);
   const [history, setHistory] = useState([]);
   const [newTodoTitle, setNewTodoTitle] = useState('');
   const [newCategory, setNewCategory] = useState('Personal');
+  const [newDueDate, setNewDueDate] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
-  const [reminderTodo, setReminderTodo] = useState(null); // todo obj whose reminder modal is open
-  const [alertToast, setAlertToast] = useState(null);  // { title, advanceMinutes }
+  const [showOverviewPanel, setShowOverviewPanel] = useState(true);
+  // Sidebar toggle — open by default on desktop, closed on mobile
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > 768);
+  
+  const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
+  
+  const [reminderTodo, setReminderTodo] = useState(null); 
+  const [alertToast, setAlertToast] = useState(null);  
   const toastTimer = useRef(null);
 
-  // Called when any reminder fires — shows in-app banner (guaranteed fallback)
   const handleAlert = useCallback(({ title, advanceMinutes }) => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     setAlertToast({ title, advanceMinutes });
-    // Auto-dismiss after 30 s
     toastTimer.current = setTimeout(() => setAlertToast(null), 30000);
   }, []);
 
@@ -47,9 +284,7 @@ function App() {
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5,
-      },
+      activationConstraint: { distance: 5 },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
@@ -77,7 +312,6 @@ function App() {
       } catch (e) {
         console.error("Failed to fetch history");
       }
-
       setError(null);
     } catch (err) {
       setError(err.message);
@@ -86,9 +320,77 @@ function App() {
     }
   };
 
+  const parseSmartInput = (input) => {
+    let title = input;
+    let dueDate = null;
+    let urgency = 'low';
+    let importance = 'low';
+
+    if (title.includes('!!')) {
+      urgency = 'high';
+      importance = 'high';
+      title = title.replace('!!', '');
+    } else {
+      if (title.toLowerCase().includes('!urgent')) {
+        urgency = 'high';
+        title = title.replace(/!urgent/i, '');
+      }
+      if (title.toLowerCase().includes('!important')) {
+        importance = 'high';
+        title = title.replace(/!important/i, '');
+      }
+    }
+
+    const todayRegex = /\b(today)\b/i;
+    const tomorrowRegex = /\b(tomorrow)\b/i;
+    const daysRegex = /\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i;
+    const nextDaysRegex = /\bnext\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i;
+
+    const getNextDayOfWeek = (dayName, isNextWeek) => {
+      const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const targetDay = days.indexOf(dayName.toLowerCase());
+      const date = new Date();
+      const currentDay = date.getDay();
+      let daysToAdd = targetDay - currentDay;
+      if (daysToAdd <= 0) daysToAdd += 7;
+      if (isNextWeek) daysToAdd += 7;
+      date.setDate(date.getDate() + daysToAdd);
+      return date.toISOString().split('T')[0];
+    };
+
+    if (todayRegex.test(title)) {
+      dueDate = new Date().toISOString().split('T')[0];
+      title = title.replace(todayRegex, '');
+    } else if (tomorrowRegex.test(title)) {
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      dueDate = d.toISOString().split('T')[0];
+      title = title.replace(tomorrowRegex, '');
+    } else {
+      const nextDayMatch = title.match(nextDaysRegex);
+      if (nextDayMatch) {
+        dueDate = getNextDayOfWeek(nextDayMatch[1], true);
+        title = title.replace(nextDaysRegex, '');
+      } else {
+        const dayMatch = title.match(daysRegex);
+        if (dayMatch) {
+          dueDate = getNextDayOfWeek(dayMatch[1], false);
+          title = title.replace(daysRegex, '');
+        }
+      }
+    }
+
+    title = title.replace(/\s+/g, ' ').trim();
+    return { title, dueDate, urgency, importance };
+  };
+
   const handleAddTodo = async (e) => {
     e.preventDefault();
     if (!newTodoTitle.trim()) return;
+
+    const parsed = parseSmartInput(newTodoTitle);
+    // Manual date picker overrides smart-parsed date if set
+    const finalDueDate = newDueDate || parsed.dueDate;
 
     try {
       const res = await fetch(API_URL, {
@@ -96,13 +398,19 @@ function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ title: newTodoTitle, category: newCategory }),
+        body: JSON.stringify({ 
+          title: parsed.title, 
+          category: newCategory,
+          dueDate: finalDueDate,
+          urgency: parsed.urgency,
+          importance: parsed.importance
+        }),
       });
       if (!res.ok) throw new Error('Failed to add todo');
       
-      const newTodo = await res.json();
-      setTodos([...todos, newTodo]);
+      await fetchTodos(); // re-fetch so all pages (Today, Upcoming, Completed) update
       setNewTodoTitle('');
+      setNewDueDate('');
     } catch (err) {
       setError(err.message);
     }
@@ -144,13 +452,9 @@ function App() {
 
   const handleDeleteAll = async () => {
     if (!confirm('Are you sure you want to delete ALL tasks? This action cannot be undone.')) return;
-    
     try {
-      const res = await fetch(API_URL, {
-        method: 'DELETE',
-      });
+      const res = await fetch(API_URL, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete all todos');
-      
       setTodos([]);
       fetchTodos();
     } catch (err) {
@@ -160,7 +464,6 @@ function App() {
 
   const handleDragEnd = async (event) => {
     const { active, over } = event;
-
     if (active && over && active.id !== over.id) {
       const oldIndex = todos.findIndex(t => t.id === active.id);
       const newIndex = todos.findIndex(t => t.id === over.id);
@@ -171,9 +474,7 @@ function App() {
       try {
         const res = await fetch(`${API_URL}/reorder`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ orderedIds: newTodos.map(t => t.id) }),
         });
         if (!res.ok) throw new Error('Failed to save order');
@@ -183,11 +484,28 @@ function App() {
     }
   };
 
-  const filteredTodos = todos.filter(todo => filterCategory === 'All' || todo.category === filterCategory);
+  const filteredTodosBase = todos.filter(todo => {
+    if (searchQuery && !todo.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    return true;
+  });
 
-  // Analytics Calculations
+  const dashboardTodos = filteredTodosBase.filter(todo => {
+    if (filterCategory === 'All') return true;
+    return todo.category === filterCategory;
+  });
+
+  const today = new Date().toISOString().split('T')[0];
+  // Today: tasks due today OR tasks with no due date (not completed) — treat undated tasks as due today
+  const todayTodos = filteredTodosBase.filter(todo => !todo.completed && (!todo.dueDate || todo.dueDate === today));
+  // Upcoming: tasks with a future due date (not completed)
+  const upcomingTodos = filteredTodosBase.filter(todo => !todo.completed && todo.dueDate && todo.dueDate > today);
+  const completedTodos = filteredTodosBase.filter(todo => todo.completed);
+
   const totalTasks = todos.length;
   const completedTasks = todos.filter(t => t.completed).length;
+  const pendingTasks = totalTasks - completedTasks;
+  const todayDateStr = new Date().toISOString().split('T')[0];
+  const dueToday = todos.filter(t => t.dueDate === todayDateStr && !t.completed).length;
   const completionRate = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
   const totalFocusTime = todos.reduce((acc, curr) => acc + (curr.focusTime || 0), 0);
   
@@ -196,274 +514,299 @@ function App() {
 
   return (
     <>
-      {/* ── In-app alert toast ─────────────────────────────────────── */}
       {alertToast && (
-        <div style={{
-          position: 'fixed', top: '20px', left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 9999, width: 'min(480px, calc(100vw - 40px))',
-          background: 'linear-gradient(135deg, #7c3aed, #2563eb)',
-          color: '#fff', borderRadius: '16px',
-          padding: '16px 20px',
-          boxShadow: '0 12px 40px rgba(124,58,237,0.45)',
-          display: 'flex', alignItems: 'flex-start', gap: '14px',
-          animation: 'slideDown 0.4s cubic-bezier(0.22,1,0.36,1)',
-        }}>
-          <div style={{ fontSize: '2rem', lineHeight: 1, flexShrink: 0 }}>🔔</div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: '800', fontSize: '1rem', marginBottom: '3px' }}>
+        <div className="alert-toast">
+          <div className="alert-toast-icon">🔔</div>
+          <div className="alert-toast-content">
+            <div className="alert-toast-title">
               {alertToast.advanceMinutes > 0
                 ? `Meeting in ${alertToast.advanceMinutes} minute${alertToast.advanceMinutes !== 1 ? 's' : ''}!`
                 : 'Time for your task!'}
             </div>
-            <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>{alertToast.title}</div>
+            <div className="alert-toast-message">{alertToast.title}</div>
           </div>
-          <button
-            onClick={() => setAlertToast(null)}
-            style={{
-              background: 'rgba(255,255,255,0.2)', border: 'none', cursor: 'pointer',
-              color: '#fff', borderRadius: '8px', padding: '4px 8px',
-              fontSize: '13px', fontWeight: '700', flexShrink: 0,
-            }}
-          >Dismiss</button>
+          <button className="btn-secondary btn-sm" onClick={() => setAlertToast(null)}>
+            Dismiss
+          </button>
         </div>
       )}
-    <div className="layout-wrapper">
-      <div className="container">
-        <div className="header" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h1 style={{ margin: 0 }}>My Tasks</h1>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button className="btn btn-secondary" onClick={handleDeleteAll} style={{ borderRadius: '20px', padding: '8px 16px', fontSize: '13px', backgroundColor: '#fee2e2', color: '#b91c1c', border: '1px solid #f87171' }}>
-              <Trash2 size={16} /> Delete All
-            </button>
-            <button className="btn btn-secondary" onClick={() => setShowAnalytics(!showAnalytics)} style={{ borderRadius: '20px', padding: '8px 16px', fontSize: '13px' }}>
-              <BarChart2 size={16} /> Analytics
-            </button>
-          </div>
-        </div>
 
-        {error && <div className="error">{error}</div>}
-
-        <form className="todo-form" onSubmit={handleAddTodo}>
-          <input
-            type="text"
-            className="todo-input"
-            placeholder="What needs to be done?"
-            value={newTodoTitle}
-            onChange={(e) => setNewTodoTitle(e.target.value)}
+      <div className="app-container">
+        {/* Backdrop — visible only on mobile when sidebar is open */}
+        {sidebarOpen && (
+          <div 
+            className="sidebar-backdrop" 
+            onClick={() => setSidebarOpen(false)} 
           />
-          <select 
-            className="todo-select" 
-            value={newCategory} 
-            onChange={(e) => setNewCategory(e.target.value)}
-          >
-            {CATEGORIES.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
-          <button type="submit" className="btn" aria-label="Add task">
-            <Plus size={20} /> Add
-          </button>
-        </form>
-
-        <div className="filter-bar">
-          {['All', ...CATEGORIES].map(cat => (
-            <button 
-              key={cat} 
-              className={`filter-pill ${filterCategory === cat ? 'active' : ''}`}
-              onClick={() => setFilterCategory(cat)}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        {loading ? (
-          <div className="loading">Loading tasks...</div>
-        ) : (
-          <DndContext 
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <ul className="todo-list">
-              {filteredTodos.length === 0 ? (
-                <div className="loading" style={{ opacity: 0.7 }}>
-                  <CheckCircle2 size={48} color="#9ca3af" style={{ marginBottom: '1rem' }} />
-                  <p>No tasks found.</p>
-                </div>
-              ) : (
-                <SortableContext 
-                  items={filteredTodos.map(t => t.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  {filteredTodos.map(todo => (
-                    <SortableTodoItem
-                      key={todo.id}
-                      todo={todo}
-                      onToggleComplete={handleToggleComplete}
-                      onDelete={handleDelete}
-                      reminder={reminders[todo.id]}
-                      onOpenReminder={() => setReminderTodo(todo)}
-                    />
-                  ))}
-                </SortableContext>
-              )}
-            </ul>
-          </DndContext>
         )}
-      </div>
 
-      <div className={`analytics-panel ${showAnalytics ? 'open' : ''}`}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{
-              width: '36px', height: '36px', borderRadius: '10px',
-              background: 'linear-gradient(135deg, #7c3aed, #2563eb)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>
-              <Activity size={18} color="#fff" />
-            </div>
-            <div>
-              <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '700', color: '#1e1b4b', letterSpacing: '-0.02em' }}>Productivity Analytics</h2>
-              <p style={{ margin: 0, fontSize: '0.78rem', color: '#94a3b8', marginTop: '1px' }}>{totalTasks} total tasks tracked</p>
-            </div>
-          </div>
-          <button
-            onClick={() => setShowAnalytics(false)}
-            style={{
-              background: '#f1f5f9', border: 'none', cursor: 'pointer',
-              width: '32px', height: '32px', borderRadius: '8px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#64748b', transition: 'background 0.2s'
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = '#e2e8f0'}
-            onMouseLeave={e => e.currentTarget.style.background = '#f1f5f9'}
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        {/* Stats grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-          {/* Completion Donut */}
-          <div style={{
-            background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)',
-            padding: '16px', borderRadius: '16px',
-            border: '1px solid #bbf7d0', textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '0.7rem', color: '#15803d', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: '700', marginBottom: '4px' }}>Completion Rate</div>
-            <div style={{ height: '90px' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={[
-                      { name: 'Done', value: completedTasks || 0 },
-                      { name: 'Left', value: Math.max(totalTasks - completedTasks, 0) }
-                    ]}
-                    cx="50%" cy="50%"
-                    innerRadius={28} outerRadius={38}
-                    dataKey="value" stroke="none"
-                    startAngle={90} endAngle={-270}
-                  >
-                    <Cell fill="#10b981" />
-                    <Cell fill="#d1fae5" />
-                  </Pie>
-                  <Tooltip formatter={(v, n) => [v + ' tasks', n]} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div style={{ fontSize: '1.6rem', fontWeight: '800', color: '#059669', lineHeight: 1 }}>{completionRate}%</div>
-            <div style={{ fontSize: '0.75rem', color: '#6ee7b7', marginTop: '2px' }}>{completedTasks}/{totalTasks} done</div>
-          </div>
-
-          {/* Focus Time */}
-          <div style={{
-            background: 'linear-gradient(135deg, #faf5ff, #ede9fe)',
-            padding: '16px', borderRadius: '16px',
-            border: '1px solid #ddd6fe',
-            display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'
-          }}>
-            <div style={{ fontSize: '0.7rem', color: '#6d28d9', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: '700', marginBottom: '12px' }}>Focus Time</div>
-            <div style={{ fontSize: '2.8rem', fontWeight: '800', color: '#7c3aed', lineHeight: 1, letterSpacing: '-0.04em' }}>
-              {Math.floor(totalFocusTime / 60)}
-              <span style={{ fontSize: '1rem', color: '#a78bfa', fontWeight: '600' }}>m</span>
-            </div>
-            <div style={{ fontSize: '0.75rem', color: '#a78bfa', marginTop: '6px' }}>Across all tasks</div>
-          </div>
-        </div>
-
-        {/* Priority Breakdown */}
-        <div style={{
-          background: 'linear-gradient(135deg, #fff7ed, #fef3c7)',
-          padding: '16px', borderRadius: '16px',
-          border: '1px solid #fed7aa'
-        }}>
-          <div style={{ fontSize: '0.7rem', color: '#c2410c', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: '700', marginBottom: '12px' }}>Priority Breakdown</div>
-          {(urgentTasks === 0 && importantTasks === 0) ? (
-            <div style={{ textAlign: 'center', padding: '16px', color: '#fb923c', fontSize: '0.85rem' }}>
-              No urgent or important tasks yet.
-            </div>
-          ) : (
-            <div style={{ height: '90px' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={[
-                    { name: '🔴 Urgent', value: urgentTasks },
-                    { name: '🔵 Important', value: importantTasks }
-                  ]}
-                  layout="vertical"
-                  margin={{ top: 4, right: 40, left: 8, bottom: 4 }}
-                >
-                  <XAxis type="number" hide domain={[0, Math.max(urgentTasks, importantTasks, 1)]} />
-                  <YAxis type="category" dataKey="name" width={85} tick={{ fontSize: 12, fill: '#92400e', fontWeight: 600 }} axisLine={false} tickLine={false} />
-                  <Tooltip cursor={{ fill: 'rgba(251,191,36,0.1)' }} formatter={(v) => [v + ' tasks']} />
-                  <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={20}>
-                    <Cell fill="#ef4444" />
-                    <Cell fill="#3b82f6" />
-                    <LabelList dataKey="value" position="right" style={{ fontSize: 13, fontWeight: 700, fill: '#92400e' }} />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </div>
-
-        {/* Task History */}
-        <div style={{
-          background: 'linear-gradient(135deg, #f8fafc, #f1f5f9)',
-          padding: '16px', borderRadius: '16px',
-          border: '1px solid #e2e8f0', marginTop: '12px',
-          flex: 1, overflowY: 'auto'
-        }}>
-          <div style={{ fontSize: '0.7rem', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: '700', marginBottom: '12px' }}>Task History</div>
-          {history.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '16px', color: '#94a3b8', fontSize: '0.85rem' }}>
-              No tasks have been deleted yet.
-            </div>
-          ) : (
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {history.slice().reverse().map((item, idx) => (
-                <li key={item.id || idx} style={{ 
-                  background: '#fff', padding: '12px', borderRadius: '12px', 
-                  border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-                }}>
+        <Sidebar 
+          setShowAnalytics={setShowAnalytics}
+          showAnalytics={showAnalytics}
+          showOverviewPanel={showOverviewPanel}
+          setShowOverviewPanel={setShowOverviewPanel}
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+        />
+        
+        <div className="main-wrapper">
+          <TopNavbar 
+            onAddClick={() => setIsAddModalOpen(true)} 
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            isDarkMode={isDarkMode}
+            setIsDarkMode={setIsDarkMode}
+            onMenuClick={() => setSidebarOpen(prev => !prev)}
+          />
+          
+          <main className="main-content">
+            {showAnalytics ? (
+              <div className="analytics-view animate-fade-in">
+                <div className="analytics-header">
                   <div>
-                    <div style={{ fontSize: '0.85rem', fontWeight: '600', color: '#334155' }}>{item.title}</div>
-                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '2px' }}>
-                      Deleted on: {new Date(item.deletedAt).toLocaleString()}
+                    <h2 className="greeting-title">Productivity Analytics</h2>
+                    <p className="greeting-subtitle">{totalTasks} total tasks tracked</p>
+                  </div>
+                  <button className="btn-ghost" onClick={() => setShowAnalytics(false)}>Back to Tasks</button>
+                </div>
+                
+                <div className="analytics-grid">
+                  <div className="side-card">
+                    <h3 className="side-card-title">Completion Rate</h3>
+                    <div className="chart-container">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={[
+                              { name: 'Done', value: completedTasks || 0 },
+                              { name: 'Pending', value: pendingTasks }
+                            ]}
+                            cx="50%" cy="50%" innerRadius={60} outerRadius={80}
+                            dataKey="value" stroke="none"
+                          >
+                            <Cell fill="var(--success)" />
+                            <Cell fill="var(--bg)" />
+                          </Pie>
+                          <Tooltip formatter={(v) => [v + ' tasks']} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div className="stats-font" style={{ fontSize: '2rem', color: 'var(--text-primary)' }}>{completionRate}%</div>
+                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{completedTasks} of {totalTasks} done</div>
                     </div>
                   </div>
-                  <div style={{ fontSize: '0.7rem', background: '#f1f5f9', padding: '4px 8px', borderRadius: '8px', color: '#64748b' }}>
-                    {item.category}
+
+                  <div className="side-card">
+                    <h3 className="side-card-title">Priority Breakdown</h3>
+                    {(urgentTasks === 0 && importantTasks === 0) ? (
+                      <div className="empty-chart-state">
+                        No urgent or important tasks.
+                      </div>
+                    ) : (
+                      <div style={{ height: '220px' }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={[
+                              { name: 'Urgent', value: urgentTasks },
+                              { name: 'Important', value: importantTasks }
+                            ]}
+                            margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+                          >
+                            <XAxis dataKey="name" tick={{ fontSize: 13 }} axisLine={false} tickLine={false} />
+                            <YAxis hide />
+                            <Tooltip cursor={{ fill: 'var(--hover)' }} />
+                            <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={40}>
+                              <Cell fill="var(--danger)" />
+                              <Cell fill="var(--warning)" />
+                              <LabelList dataKey="value" position="top" style={{ fill: 'var(--text-primary)', fontWeight: 600 }} />
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )}
                   </div>
-                </li>
-              ))}
-            </ul>
-          )}
+                </div>
+              </div>
+            ) : (
+              <Routes>
+                <Route path="/" element={
+                  <div className="dashboard-view animate-fade-in">
+                <div className={`dashboard-overview-section ${!showOverviewPanel ? 'overview-hidden' : ''}`}>
+                  <div className="greeting-section">
+                    <h2 className="greeting-title">Good Morning 👋</h2>
+                    <p className="greeting-subtitle">Here is your productivity summary for today.</p>
+                  </div>
+
+                  <div className="stats-grid">
+                    <StatCard 
+                      icon={<CheckSquare size={20} />} title="Total Tasks" value={totalTasks} 
+                      color="var(--text-primary)" bgColor="var(--border-light)" 
+                    />
+                    <StatCard 
+                      icon={<CheckCircle2 size={20} />} title="Completed" value={completedTasks} 
+                      color="var(--success)" bgColor="#F0FDF4" 
+                    />
+                    <StatCard 
+                      icon={<Clock size={20} />} title="Pending" value={pendingTasks} 
+                      color="var(--warning)" bgColor="#FFFBEB" 
+                    />
+                    <StatCard 
+                      icon={<Calendar size={20} />} title="Due Today" value={dueToday} 
+                      color="var(--danger)" bgColor="#FEF2F2" 
+                    />
+                  </div>
+
+                  <div className="progress-container">
+                    <div className="progress-header">
+                      <span>Daily Progress</span>
+                      <span>{completionRate}%</span>
+                    </div>
+                    <div className="progress-track">
+                      <div className="progress-fill" style={{ width: `${completionRate}%` }}></div>
+                    </div>
+                  </div>
+
+                  <div className="filter-container">
+                    {['All', ...CATEGORIES].map(cat => (
+                      <button 
+                        key={cat} 
+                        className={`filter-chip ${filterCategory === cat ? 'active' : ''}`}
+                        onClick={() => setFilterCategory(cat)}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="content-grid">
+                  <div className="task-list-section">
+                    <div className="section-header">
+                      <h3 className="section-title">Tasks</h3>
+                      <button className="btn-ghost-danger" onClick={handleDeleteAll}>
+                        Clear All
+                      </button>
+                    </div>
+
+                    {loading ? (
+                      <div className="loading-state">Loading tasks...</div>
+                    ) : dashboardTodos.length === 0 ? (
+                      <EmptyState onAddClick={() => setIsAddModalOpen(true)} />
+                    ) : (
+                      <DndContext 
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                      >
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          <SortableContext 
+                            items={dashboardTodos.map(t => t.id)}
+                            strategy={verticalListSortingStrategy}
+                          >
+                            {dashboardTodos.map(todo => (
+                              <SortableTodoItem
+                                key={todo.id}
+                                todo={todo}
+                                onToggleComplete={handleToggleComplete}
+                                onDelete={handleDelete}
+                                reminder={reminders[todo.id]}
+                                onOpenReminder={() => setReminderTodo(todo)}
+                              />
+                            ))}
+                          </SortableContext>
+                        </div>
+                      </DndContext>
+                    )}
+                  </div>
+
+                  <div className="side-panel">
+                    <div className="side-card animate-slide-in" style={{ animationDelay: '0.1s' }}>
+                      <h3 className="side-card-title">Recent Activity</h3>
+                      {history.length === 0 ? (
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>No recent activity.</p>
+                      ) : (
+                        <ul className="activity-list">
+                          {history.slice(-4).reverse().map((item, idx) => (
+                            <li key={item.id || idx} className="activity-item">
+                              <div className="activity-dot"></div>
+                              <div className="activity-content">
+                                <div className="activity-title">{item.title}</div>
+                                <div className="activity-time">
+                                  Deleted {new Date(item.deletedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                </div>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+                } />
+                <Route path="/today" element={
+                  <DirectedPage 
+                    title="Today's Tasks"
+                    subtitle={`${todayTodos.length} tasks scheduled for today.`}
+                    icon={<Calendar size={32} />}
+                    todos={todayTodos}
+                    onToggleComplete={handleToggleComplete}
+                    onDelete={handleDelete}
+                    reminders={reminders}
+                    setReminderTodo={setReminderTodo}
+                    onAddClick={() => setIsAddModalOpen(true)}
+                    sensors={sensors}
+                    handleDragEnd={handleDragEnd}
+                  />
+                } />
+                <Route path="/upcoming" element={
+                  <DirectedPage 
+                    title="Upcoming Tasks"
+                    subtitle={`${upcomingTodos.length} tasks planned for the future.`}
+                    icon={<Inbox size={32} />}
+                    todos={upcomingTodos}
+                    onToggleComplete={handleToggleComplete}
+                    onDelete={handleDelete}
+                    reminders={reminders}
+                    setReminderTodo={setReminderTodo}
+                    onAddClick={() => setIsAddModalOpen(true)}
+                    sensors={sensors}
+                    handleDragEnd={handleDragEnd}
+                  />
+                } />
+                <Route path="/completed" element={
+                  <DirectedPage 
+                    title="Completed Tasks"
+                    subtitle={`${completedTodos.length} tasks successfully finished.`}
+                    icon={<CheckSquare size={32} />}
+                    todos={completedTodos}
+                    onToggleComplete={handleToggleComplete}
+                    onDelete={handleDelete}
+                    reminders={reminders}
+                    setReminderTodo={setReminderTodo}
+                    onAddClick={() => setIsAddModalOpen(true)}
+                    sensors={sensors}
+                    handleDragEnd={handleDragEnd}
+                  />
+                } />
+              </Routes>
+            )}
+          </main>
         </div>
       </div>
-    </div>
+
+      <AddTaskModal 
+        isOpen={isAddModalOpen} 
+        onClose={() => setIsAddModalOpen(false)} 
+        onSubmit={handleAddTodo}
+        newTodoTitle={newTodoTitle}
+        setNewTodoTitle={setNewTodoTitle}
+        newCategory={newCategory}
+        setNewCategory={setNewCategory}
+        newDueDate={newDueDate}
+        setNewDueDate={setNewDueDate}
+      />
 
       {reminderTodo && (
         <ReminderModal

@@ -43,7 +43,7 @@ const getUserId = (req) => req.headers['x-user-id'] || 'anonymous';
 
 // CREATE
 app.post('/api/todos', (req, res) => {
-  const { title, description, category } = req.body;
+  const { title, description, category, dueDate, urgency, importance } = req.body;
   if (!title) {
     return res.status(400).json({ error: 'Title is required' });
   }
@@ -55,6 +55,9 @@ app.post('/api/todos', (req, res) => {
     title,
     description: description || '',
     category: category || 'Other',
+    dueDate: dueDate || null,
+    urgency: urgency || 'normal',
+    importance: importance || 'normal',
     completed: false,
     createdAt: new Date().toISOString()
   };
