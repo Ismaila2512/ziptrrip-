@@ -16,6 +16,10 @@
 
 <br />
 
+## Live Demo
+Check out the live application on Vercel: **[https://ziptrrip-chi.vercel.app/](https://ziptrrip-chi.vercel.app/)**
+
+<br />
 ## Features Showcase
 
 **Interactive Drag-and-Drop**
@@ -43,19 +47,18 @@
 
 ```text
 ziptrrip/
-├── TaskFlow[To Do List]/
-│   ├── frontend/         # React, Vite, and Glassmorphic CSS UI
-│   └── backend/          # Node.js, Express, and JSON storage
-├── challenge.md          # JavaScript challenge problem solutions
-├── README.md             # Project documentation
-└── .gitignore            # Git tracking exclusions
+├── frontend/         # React, Vite, and Glassmorphic CSS UI
+├── backend/          # Node.js, Express, and JSON storage
+├── challenge.md      # JavaScript challenge problem solutions
+├── README.md         # Project documentation
+└── .gitignore        # Git tracking exclusions
 ```
 
 ## Quick Start Guide
 
 ### 1. Initialize the Backend
 ```bash
-cd "TaskFlow[To Do List]/backend"
+cd backend
 npm install
 node server.js
 ```
@@ -64,7 +67,7 @@ node server.js
 ### 2. Initialize the Frontend
 *In a new terminal window:*
 ```bash
-cd "TaskFlow[To Do List]/frontend"
+cd frontend
 npm install
 npm run dev
 ```
