@@ -6,8 +6,8 @@ const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const DATA_FILE = path.join(__dirname, 'todos.json');
-const HISTORY_FILE = path.join(__dirname, 'history.json');
+const DATA_FILE = process.env.VERCEL ? path.join('/tmp', 'todos.json') : path.join(__dirname, 'todos.json');
+const HISTORY_FILE = process.env.VERCEL ? path.join('/tmp', 'history.json') : path.join(__dirname, 'history.json');
 
 app.use(cors());
 app.use(express.json());
@@ -208,6 +208,10 @@ app.get('/api/history', (req, res) => {
   res.json(history);
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running on http://0.0.0.0:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is running on http://0.0.0.0:${PORT}`);
+  });
+}
+
+module.exports = app;

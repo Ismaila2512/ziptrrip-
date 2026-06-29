@@ -206,4 +206,4 @@ For specific selectors, provide the line numbers of elements selected, explain w
 fall into the respective columns. */
 ```
 
-**Live Demo:** [https://ziptrrip-chi.vercel.app/](https://ziptrrip-chi.vercel.app/)
+**Live Demo:** [https://ziptrrip-chi.vercel.app](https://ziptrrip-chi.vercel.app/)
